@@ -331,7 +331,7 @@ void station_upload(uint8_t left, uint16_t devid, uint16_t time)
     uint32_t volValue;
     double pktrssi;
     char rssi;
-    uint8_t devnum;
+    int devnum;
     uint8_t groupnum;
     
     advValue = HwADCRead();
