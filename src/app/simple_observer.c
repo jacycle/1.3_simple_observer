@@ -80,6 +80,7 @@
 #include "station.h"
 #include "crc.h"
 #include "sx1276-Hal.h"
+#include "sx1276.h"
    
 /*********************************************************************
  * MACROS
@@ -90,10 +91,14 @@
  */
 
 // Maximum number of scan responses
-#define DEFAULT_MAX_SCAN_RES                  8
+#define DEFAULT_MAX_SCAN_RES                  32
 
 // Scan duration in ms
-#define DEFAULT_SCAN_DURATION                 4000
+//#define DEFAULT_SCAN_DURATION                 4000
+#define DEFAULT_SCAN_DURATION                 300
+
+// How often to perform periodic event (in msec)
+#define SBP_PERIODIC_EVT_PERIOD               3000
 
 // Discovery mode (limited, general, all)
 #define DEFAULT_DISCOVERY_MODE                DEVDISC_MODE_ALL
@@ -126,7 +131,7 @@
 #endif
 
 #ifndef RADIO_TASK_STACK_SIZE
-#define RADIO_TASK_STACK_SIZE                 1500
+#define RADIO_TASK_STACK_SIZE                 1000
 #endif
 
 #define SBO_STATE_CHANGE_EVT                  0x0001
@@ -145,9 +150,6 @@
                                                SBP_TIMER_PERIODIC_EVT  | \
                                                SBP_START_DICOVER_EVT   | \
                                                SBP_STOP_DICOVER_EVT)
-
-// How often to perform periodic event (in msec)
-#define SBP_PERIODIC_EVT_PERIOD               5000
 
 /*********************************************************************
  * TYPEDEFS
@@ -466,6 +468,12 @@ static void SimpleBLEObserver_taskFxn(UArg a0, UArg a1)
     {
         t_temp += SBP_PERIODIC_EVT_PERIOD / 1000;
         Display_print1(dispHandle, 0, 0, "t_temp=%d", t_temp);
+        if (scanning)
+        {
+            GAPObserverRole_StartDiscovery(DEFAULT_DISCOVERY_MODE,
+                                           DEFAULT_DISCOVERY_ACTIVE_SCAN,
+                                           DEFAULT_DISCOVERY_WHITE_LIST);        
+        }
     }
     if (events & SBP_STOP_DICOVER_EVT)
     {
@@ -679,9 +687,9 @@ static void SimpleBLEObserver_processRoleEvent(gapObserverRoleEvent_t *pEvent)
         Display_print1(dispHandle, 0, 0, "Devices = %d", device_num);
         if (scanning)
         {
-        GAPObserverRole_StartDiscovery(DEFAULT_DISCOVERY_MODE,
-                                       DEFAULT_DISCOVERY_ACTIVE_SCAN,
-                                       DEFAULT_DISCOVERY_WHITE_LIST);
+//        GAPObserverRole_StartDiscovery(DEFAULT_DISCOVERY_MODE,
+//                                       DEFAULT_DISCOVERY_ACTIVE_SCAN,
+//                                       DEFAULT_DISCOVERY_WHITE_LIST);
         }
         
       }
@@ -1061,6 +1069,7 @@ device_delete:
                   a2_mode_retry = 0;
                   goto start;
               }
+              station_seq_plusplus();
               for (i=0; i<3; i++)
               {
                   Display_print0(dispHandle, 0, 0, "station_upload");
@@ -1086,7 +1095,6 @@ device_delete:
 //                      wait_time -= 10;
                   }
               }
-              station_seq_plusplus();
           }
           else
           {

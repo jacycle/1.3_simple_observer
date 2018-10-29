@@ -13,7 +13,7 @@ extern "C"
 #define A1_ACESS_RESP       1
 #define A2_UPLOADE_RESP     2
  
-#define BLE_DEVICE_NUM      (30 * 10)
+#define BLE_DEVICE_NUM      (30 * 30)
   
 typedef struct
 {

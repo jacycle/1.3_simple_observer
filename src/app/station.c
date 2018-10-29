@@ -20,7 +20,7 @@ static uint16_t BufferSize = BUFFER_SIZE;			// RF buffer size
 static uint8_t  Buffer[BUFFER_SIZE];				// RF buffer
 
 static uint8_t station_mode;
-static uint8_t station_seq;
+static uint8_t station_seq = 0;
 static BleDevID_t ble_device_group[BLE_DEVICE_NUM];
 
 extern Display_Handle dispHandle;
@@ -331,7 +331,7 @@ void station_upload(uint8_t left, uint16_t devid, uint16_t time)
     uint32_t volValue;
     double pktrssi;
     char rssi;
-    uint8_t devnum;
+    int devnum;
     uint8_t groupnum;
     
     advValue = HwADCRead();
@@ -352,8 +352,8 @@ void station_upload(uint8_t left, uint16_t devid, uint16_t time)
     for (j=0; j<groupnum; j++)
     {
         left  = (groupnum - j - 1) & 0x0f;  // data left
- //       left |= (station_seq & 0x0f) << 4; 
-        Display_print1(dispHandle, 0, 0, "left=%d", left);
+        left |= (station_seq & 0x0f) << 4; 
+        Display_print1(dispHandle, 0, 0, "left=%x", left);
         index = 0;
         buffer[index++] = 0xaa;
         buffer[index++] = 0x57;
@@ -407,9 +407,9 @@ void station_upload(uint8_t left, uint16_t devid, uint16_t time)
     //    crc8((char *)buffer, index, (char *)&crc);
         crc = CalCrc(&buffer[2], index - 2);
         buffer[index++]  = crc;
-        station_send_data(buffer, index);
-        //Display_print1(dispHandle, 0, 0, "station_send_len=%d", index);
+        Display_print1(dispHandle, 0, 0, "station_send_len=%d", index);
         //station_dump(buffer, index);
+        station_send_data(buffer, index);
         if (j != (groupnum - 1))
         {
             Task_sleep(500 * (1000 / Clock_tickPeriod));

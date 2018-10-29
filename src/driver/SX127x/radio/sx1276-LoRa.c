@@ -770,7 +770,8 @@ void SX1276LoRaSetSpreadingFactorC1()
 {
  //   SX1276LR->RegModemConfig2 = 0xC0;
  //   SX1276Write( REG_LR_MODEMCONFIG2, SX1276LR->RegModemConfig2 );
-//    LoRaSettings.SpreadingFactor = 12;
+      LoRaSettings.SpreadingFactor = 9;
+      SX1276LoRaSetSpreadingFactor( LoRaSettings.SpreadingFactor );
 }
 
 void SX1276LoRaSetSpreadingFactorT1()
@@ -788,6 +789,7 @@ void SX1276LoRaSetRFFrequencyC1()
 //    SX1276LR->RegFrfLsb = 0xB8;
 //    SX1276WriteBuffer( REG_LR_FRFMSB, &SX1276LR->RegFrfMsb, 3 );
 //    SX1276SetLoRaOn(true);
+    SX1276LoRaSetSpreadingFactorC1();
     LoRaSettings.RFFrequency = 471010000;
     SX1276LoRaSetRFFrequency( LoRaSettings.RFFrequency ); 
 }
