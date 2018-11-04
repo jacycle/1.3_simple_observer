@@ -11,6 +11,7 @@
 #include "radio.h"
 #include "hw_gpio.h"
 #include "sx1276-Hal.h"
+#include "sx1276-LoRa.h"
 #include "sx1276.h"
 
 #define BUFFER_SIZE     256                          // Define the payload size here
@@ -222,7 +223,7 @@ void station_send_data(uint8_t *pbuf, uint8_t len)
 //    timeout = 100;
 //    while(1)
     startTick = GET_TICK_COUNT( );
-    while( ( GET_TICK_COUNT( ) - startTick ) < TICK_RATE_MS( 500 ) )
+    while( ( GET_TICK_COUNT( ) - startTick ) < TICK_RATE_MS( 2000 ) )
     {
         state = Radio->Process();
         if(state == RF_TX_DONE)
@@ -271,6 +272,14 @@ void station_dump(uint8_t *pbuf, uint16_t len)
         }
         Display_print0(dispHandle, 0, 0, temp);
     }
+}
+
+void station_goto_sleep(void)
+{
+//    Radio->SetOpMode(RFLR_OPMODE_SLEEP);
+    Radio->SetOpMode(RFLR_OPMODE_STANDBY);
+    
+//    SX1276LoRaInit();
 }
 
 void station_start_rx(void)

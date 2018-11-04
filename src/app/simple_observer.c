@@ -85,6 +85,7 @@
 /*********************************************************************
  * MACROS
  */
+#define BEACON_FEATURE
 
 /*********************************************************************
  * CONSTANTS
@@ -168,6 +169,7 @@ typedef struct
 
 // Display Interface
 Display_Handle dispHandle = NULL;
+Watchdog_Handle hWDT;
 uint16_t device_id;
 uint16_t t_temp;       // set to 0 when upload data 
 
@@ -288,6 +290,36 @@ static Void radio_queue_create(void)
 //  myQueueHandle = Queue_create(NULL,NULL);
 }
 
+//static void watchdog_callback(UArg a0)
+//{
+//  Watchdog_clear(hWDT);
+//}
+static void wdt_feed(void)
+{
+  Watchdog_clear(hWDT);
+}
+
+static void wdt_init(void)
+{
+  int t;
+  
+  Watchdog_Params wp;
+  Watchdog_Params_init(&wp);
+//  wp.callbackFxn    = watchdog_callback;
+  wp.debugStallMode = Watchdog_DEBUG_STALL_ON;
+  wp.resetMode      = Watchdog_RESET_ON;
+
+  Watchdog_init();
+  hWDT = Watchdog_open(CC2640R2_LAUNCHXL_WATCHDOG0, &wp);
+  if (hWDT == NULL) 
+  {
+    /* Error opening Watchdog */
+    return;
+  }
+  t = Watchdog_convertMsToTicks(hWDT, SBP_PERIODIC_EVT_PERIOD + 1000);
+  Watchdog_setReload(hWDT, t); // 1sec (WDT runs always at 48MHz/32)
+}
+
 /*********************************************************************
  * @fn      SimpleBLEObserver_createTask
  *
@@ -401,6 +433,8 @@ void SimpleBLEObserver_init(void)
   radio_createTask();
   
   HwADCInit();
+  
+  wdt_init();
 }
 
 /*********************************************************************
@@ -466,6 +500,7 @@ static void SimpleBLEObserver_taskFxn(UArg a0, UArg a1)
     
     if (events & SBP_TIMER_PERIODIC_EVT)
     {
+        wdt_feed();
         t_temp += SBP_PERIODIC_EVT_PERIOD / 1000;
         Display_print1(dispHandle, 0, 0, "t_temp=%d", t_temp);
         if (scanning)
@@ -738,16 +773,36 @@ static void SimpleBLEObserver_addDeviceInfo(uint8_t *pAddr, uint8_t eventType, u
   uint8_t key_alarm;
   uint16_t id;
   uint8_t c;
-  const uint8_t advdata[8] = {0x02, 0x01, 0x04, 0x04, 0xff, 0xaa, 0x00, 0x00}; 
+#ifndef BEACON_FEATURE
+  const uint8_t advdata[8] = {0x02, 0x01, 0x04, 0x04, 0xff, 0xaa, 0x00, 0x00};
+#else
+  const uint8_t advdata[30] = {0x02, 0x01, 0x04, 0x1a, 0xff, 0x0d, 0x00, 0x02, 
+                               0x15, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                               0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                               0x00, 0x00, 0x01, 0x00, 0x01, 0xc5};
+#endif
 
   id = (pAddr[1] << 8) + pAddr[0];
-  if (eventType == GAP_ADRPT_ADV_SCAN_IND && 
+  if (
       addrType == ADDRTYPE_PUBLIC &&
+#ifndef BEACON_FEATURE
       dataLen == 8 &&
-      memcmp(pRawData, advdata, 6) == 0)
+      eventType == GAP_ADRPT_ADV_SCAN_IND && 
+      memcmp(pRawData, advdata, 6) == 0
+#else
+      dataLen == 30 &&
+      eventType == GAP_ADRPT_ADV_NONCONN_IND && 
+      memcmp(pRawData, advdata, 25) == 0 
+#endif
+     )
   {
+#ifndef BEACON_FEATURE
       bat_alarm = pRawData[6];
       key_alarm = pRawData[7];
+#else
+      bat_alarm = pRawData[25];
+      key_alarm = pRawData[27];
+#endif
       c = (t_temp / 10) << 2;
       if (bat_alarm)
         c |= 0x01;
@@ -993,6 +1048,7 @@ static void radio_taskFxn(UArg a0, UArg a1)
 start:
           if(station_mode_get() == A1_MODE)
           {
+              station_goto_sleep();
               Display_print0(dispHandle, 0, 0, "A1_MODE");
               if (a1_wait_counter < 100)
               {
@@ -1014,12 +1070,16 @@ start:
               }
               HwGPIOSet(Board_RLED, 1);
               Display_print0(dispHandle, 0, 0, "station_access_request");
-              SX1276LoRaSetRFFrequencyC1();
+              if (LoRaGetRFFrequency() != LoRaGetRFFrequencyC1())
+              {
+                  SX1276LoRaSetRFFrequencyC1();
+                  Task_sleep(100 * (1000 / Clock_tickPeriod));
+              }
               station_access_request(device_id);
               station_start_rx();
               wait_time = 1000;
               startTick = GET_TICK_COUNT( );
-              while( ( GET_TICK_COUNT( ) - startTick ) < TICK_RATE_MS( 1000 ) )
+              while( ( GET_TICK_COUNT( ) - startTick ) < TICK_RATE_MS( 2000 ) )
 //              while(wait_time)
               {
                   ret = station_recv_data(&pbuf, &rlen);
@@ -1045,6 +1105,7 @@ start:
               
               Display_print0(dispHandle, 0, 0, "A2_MODE");
 device_delete:
+              station_goto_sleep();
               t_temp = 0;
               station_device_delete();
               if (i >= 3)
@@ -1073,13 +1134,17 @@ device_delete:
               for (i=0; i<3; i++)
               {
                   Display_print0(dispHandle, 0, 0, "station_upload");
-                  SX1276LoRaSetRFFrequencyT1();
+                  if (LoRaGetRFFrequency() != LoRaGetRFFrequencyT1())
+                  {
+                      SX1276LoRaSetRFFrequencyT1();
+                      Task_sleep(100 * (1000 / Clock_tickPeriod));
+                  }
                   station_upload(0, device_id, time_offset);
                   station_start_rx();
 //                  wait_time = 1000;
 //                  while(wait_time)
                   startTick = GET_TICK_COUNT( );
-                  while( ( GET_TICK_COUNT( ) - startTick ) < TICK_RATE_MS( 1000 ) )
+                  while( ( GET_TICK_COUNT( ) - startTick ) < TICK_RATE_MS( 2000 ) )
                   {
                       ret = station_recv_data(&pbuf, &rlen);
                       if (ret)

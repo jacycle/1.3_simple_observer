@@ -13,7 +13,7 @@ extern "C"
 #define A1_ACESS_RESP       1
 #define A2_UPLOADE_RESP     2
  
-#define BLE_DEVICE_NUM      (30 * 30)
+#define BLE_DEVICE_NUM      (30 * 20)
   
 typedef struct
 {
@@ -30,6 +30,7 @@ int station_recv_data(uint8_t **pbuf, uint16_t *len);
 void station_start_rx(void);
 
 void station_init(void);
+void station_goto_sleep(void);
 void station_seq_plusplus(void);
 void station_device_add(uint16_t index, uint16_t id, uint8_t c);
 void station_device_update(uint16_t id, uint8_t c);

@@ -157,8 +157,18 @@ void SX1276SetRFState( uint8_t state );
  */
 uint32_t SX1276Process( void );
 
+/*!
+ * \brief Sets the SX1276 operating mode
+ *
+ * \param [IN] opMode New operating mode
+ */
+void SX1276LoRaSetOpMode( uint8_t opMode );
 
 void SX1276LoRaSetRFFrequencyC1();
 void SX1276LoRaSetRFFrequencyT1();
+
+uint32_t LoRaGetRFFrequency(void);
+uint32_t LoRaGetRFFrequencyC1(void);
+uint32_t LoRaGetRFFrequencyT1(void);
 
 #endif //__SX1276_H__

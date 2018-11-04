@@ -56,6 +56,7 @@ typedef struct sRadioDriver
     void ( *GetRxPacket )( void *buffer, uint16_t *size );
     void ( *SetTxPacket )( const void *buffer, uint16_t size );
     uint32_t ( *Process )( void );
+    void (*SetOpMode)( uint8_t opMode );
 }tRadioDriver;
 
 /*!

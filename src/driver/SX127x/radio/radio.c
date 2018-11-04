@@ -62,6 +62,7 @@ tRadioDriver* RadioDriverInit( void )
     RadioDriver.GetRxPacket = SX1276GetRxPacket;
     RadioDriver.SetTxPacket = SX1276SetTxPacket;
     RadioDriver.Process = SX1276Process;
+    RadioDriver.SetOpMode = SX1276LoRaSetOpMode;
 #else
     #error "Missing define: USE_XXXXXX_RADIO (ie. USE_SX1272_RADIO)"
 #endif    

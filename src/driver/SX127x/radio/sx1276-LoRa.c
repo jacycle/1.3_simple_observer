@@ -165,8 +165,8 @@ tLoRaSettings LoRaSettings =
     1,                // RxSingleOn [0: Continuous, 1 Single]
     0,                // FreqHopOn [0: OFF, 1: ON]              //ÌøÆµ¼¼Êõ
     4,                // HopPeriod Hops every frequency hopping period symbols
-    100,              // TxPacketTimeout
-    100,              // RxPacketTimeout
+    300,              // TxPacketTimeout
+    300,              // RxPacketTimeout
     128,              // PayloadLength (used for implicit header mode)
 };
 
@@ -770,7 +770,7 @@ void SX1276LoRaSetSpreadingFactorC1()
 {
  //   SX1276LR->RegModemConfig2 = 0xC0;
  //   SX1276Write( REG_LR_MODEMCONFIG2, SX1276LR->RegModemConfig2 );
-      LoRaSettings.SpreadingFactor = 9;
+      LoRaSettings.SpreadingFactor = 10;
       SX1276LoRaSetSpreadingFactor( LoRaSettings.SpreadingFactor );
 }
 
@@ -804,6 +804,22 @@ void SX1276LoRaSetRFFrequencyT1()
 //    SX1276SetLoRaOn(true);
     LoRaSettings.RFFrequency = 470110000;
     SX1276LoRaSetRFFrequency( LoRaSettings.RFFrequency ); 
+}
+
+uint32_t LoRaGetRFFrequency(void)
+{
+    return LoRaSettings.RFFrequency;
+}
+
+
+uint32_t LoRaGetRFFrequencyC1(void)
+{
+    return 471010000;
+}
+
+uint32_t LoRaGetRFFrequencyT1(void)
+{
+    return 470110000;
 }
 
 
