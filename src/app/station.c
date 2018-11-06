@@ -342,6 +342,7 @@ void station_upload(uint8_t left, uint16_t devid, uint16_t time)
     char rssi;
     int devnum;
     uint8_t groupnum;
+    const uint8_t PKG_DEV_NUM = 36;
     
     advValue = HwADCRead();
     volValue = (advValue * 43) / 4095;
@@ -349,7 +350,7 @@ void station_upload(uint8_t left, uint16_t devid, uint16_t time)
     rssi = pktrssi;
     
     devnum = station_device_num();
-    groupnum = (devnum + 37) / 38;
+    groupnum = (devnum + (PKG_DEV_NUM-1)) / PKG_DEV_NUM;
     
     /* if no device, should send the data too */
     if (groupnum == 0)
@@ -360,8 +361,8 @@ void station_upload(uint8_t left, uint16_t devid, uint16_t time)
     /*  how many times to send */
     for (j=0; j<groupnum; j++)
     {
-        left  = (groupnum - j - 1) & 0x0f;  // data left
-        left |= (station_seq & 0x0f) << 4; 
+        left  = (groupnum - j - 1) & 0x1f;  // data left
+        left |= (station_seq & 0x07) << 5; 
         Display_print1(dispHandle, 0, 0, "left=%x", left);
         index = 0;
         buffer[index++] = 0xaa;
@@ -379,38 +380,38 @@ void station_upload(uint8_t left, uint16_t devid, uint16_t time)
         }
         if (j == (groupnum - 1))
         {
-            for(i=0; i<(devnum % 38); i++)
+            for(i=0; i<(devnum % PKG_DEV_NUM); i++)
             {
-                buffer[index++] = ble_device_group[j*38 + i].id;
-                buffer[index++] = ble_device_group[j*38 + i].id >> 8;
-                buffer[index++] = ble_device_group[j*38 + i].c;
+                buffer[index++] = ble_device_group[j*PKG_DEV_NUM + i].id;
+                buffer[index++] = ble_device_group[j*PKG_DEV_NUM + i].id >> 8;
+                buffer[index++] = ble_device_group[j*PKG_DEV_NUM + i].c;
             }
             /* first packet */
             if (j == 0)
             {
-                buffer[5] = ((devnum % 38) * 3) + 4;
+                buffer[5] = ((devnum % PKG_DEV_NUM) * 3) + 4;
             }
             else
             {
-                buffer[5] = ((devnum % 38) * 3);
+                buffer[5] = ((devnum % PKG_DEV_NUM) * 3);
             }
         }
         else
         {
-            for(i=0; i<38; i++)
+            for(i=0; i<PKG_DEV_NUM; i++)
             {
-                buffer[index++] = ble_device_group[j*38 + i].id;
-                buffer[index++] = ble_device_group[j*38 + i].id >> 8;
-                buffer[index++] = ble_device_group[j*38 + i].c;
+                buffer[index++] = ble_device_group[j*PKG_DEV_NUM + i].id;
+                buffer[index++] = ble_device_group[j*PKG_DEV_NUM + i].id >> 8;
+                buffer[index++] = ble_device_group[j*PKG_DEV_NUM + i].c;
             }
             /* first packet */
             if (j == 0)
             {
-                buffer[5] = (38 * 3) + 4;
+                buffer[5] = (PKG_DEV_NUM * 3) + 4;
             }
             else
             {
-                buffer[5] = (38 * 3);
+                buffer[5] = (PKG_DEV_NUM * 3);
             }
         }
     //    crc8((char *)buffer, index, (char *)&crc);
