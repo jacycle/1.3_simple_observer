@@ -171,6 +171,8 @@ typedef struct
 Display_Handle dispHandle = NULL;
 Watchdog_Handle hWDT;
 uint16_t device_id;
+uint32_t device_freq;
+uint8_t device_sf;
 uint16_t t_temp;       // set to 0 when upload data 
 
 /*********************************************************************
@@ -685,8 +687,14 @@ static void SimpleBLEObserver_processRoleEvent(gapObserverRoleEvent_t *pEvent)
     case GAP_DEVICE_INIT_DONE_EVENT:
       {
         Display_print0(dispHandle, 1, 0, Util_convertBdAddr2Str(pEvent->initDone.devAddr));
-        device_id = pEvent->initDone.devAddr[0] + (pEvent->initDone.devAddr[1] << 8);
-        Display_print1(dispHandle, 2, 0, "Initialized id = 0x%04x", device_id);
+        device_id = pEvent->initDone.devAddr[4] + (pEvent->initDone.devAddr[5] << 8);
+        device_freq = (pEvent->initDone.devAddr[1] << 0) |
+                      (pEvent->initDone.devAddr[2] << 8) |
+                      (pEvent->initDone.devAddr[3] << 16);
+        device_freq *= 1000;
+        device_sf = pEvent->initDone.devAddr[0] & 0x0f;
+        Display_print1(dispHandle, 2, 0, "devid = 0x%04x", device_id);
+        Display_print1(dispHandle, 2, 0, "freq = %d", device_freq);
         // Prompt user to begin scanning.
         Display_print0(dispHandle, 5, 0, "Discover ->");
 //        HwUARTWrite("Discover ->\r\n", strlen("Discover ->\r\n"));
@@ -1022,11 +1030,14 @@ static void radio_taskFxn(UArg a0, UArg a1)
     uint8_t *pbuf;
     uint16_t rlen;
     uint32_t events;
-    uint32_t startTick;  
+    uint32_t startTick;
+    uint32_t chipid;
     
     a1_wait_counter = 0;
     wait_time = 0;
     
+//    chipid = 0;
+//    Display_print1(dispHandle, 0, 0, "chipid=%x", chipid);
 	station_init();
     Display_print0(dispHandle, 0, 0, "radio_taskFxn start");
     while(device_id == 0)

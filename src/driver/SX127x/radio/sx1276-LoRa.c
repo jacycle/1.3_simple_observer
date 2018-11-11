@@ -766,11 +766,14 @@ uint32_t SX1276LoRaProcess( void )
     return result;
 }
 
+extern uint32_t device_freq;
+extern uint8_t device_sf;
+
 void SX1276LoRaSetSpreadingFactorC1()
 {
  //   SX1276LR->RegModemConfig2 = 0xC0;
  //   SX1276Write( REG_LR_MODEMCONFIG2, SX1276LR->RegModemConfig2 );
-      LoRaSettings.SpreadingFactor = 10;
+      LoRaSettings.SpreadingFactor = device_sf;
       SX1276LoRaSetSpreadingFactor( LoRaSettings.SpreadingFactor );
 }
 
@@ -790,7 +793,8 @@ void SX1276LoRaSetRFFrequencyC1()
 //    SX1276WriteBuffer( REG_LR_FRFMSB, &SX1276LR->RegFrfMsb, 3 );
 //    SX1276SetLoRaOn(true);
     SX1276LoRaSetSpreadingFactorC1();
-    LoRaSettings.RFFrequency = 471010000;
+    LoRaSettings.RFFrequency = device_freq;
+//    LoRaSettings.RFFrequency = 471010000;
     SX1276LoRaSetRFFrequency( LoRaSettings.RFFrequency ); 
 }
 
@@ -802,7 +806,9 @@ void SX1276LoRaSetRFFrequencyT1()
 //    SX1276LR->RegFrfLsb = 0x1E;
 //    SX1276WriteBuffer( REG_LR_FRFMSB, &SX1276LR->RegFrfMsb, 3 );
 //    SX1276SetLoRaOn(true);
-    LoRaSettings.RFFrequency = 470110000;
+  
+    LoRaSettings.RFFrequency = device_freq - 900000;
+//    LoRaSettings.RFFrequency = 470110000;
     SX1276LoRaSetRFFrequency( LoRaSettings.RFFrequency ); 
 }
 
@@ -814,12 +820,12 @@ uint32_t LoRaGetRFFrequency(void)
 
 uint32_t LoRaGetRFFrequencyC1(void)
 {
-    return 471010000;
+    return device_freq;  // 471010000;
 }
 
 uint32_t LoRaGetRFFrequencyT1(void)
 {
-    return 470110000;
+    return device_freq - 900000; // 470110000;
 }
 
 
