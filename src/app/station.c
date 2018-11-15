@@ -1,5 +1,6 @@
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <ti/display/Display.h>
 #include <ti/sysbios/knl/Clock.h>
 #include <ti/sysbios/knl/Task.h>
@@ -13,6 +14,7 @@
 #include "sx1276-Hal.h"
 #include "sx1276-LoRa.h"
 #include "sx1276.h"
+#include "hal_adc.h"
 
 #define BUFFER_SIZE     256                          // Define the payload size here
 
@@ -343,6 +345,7 @@ void station_upload(uint8_t left, uint16_t devid, uint16_t time)
     int devnum;
     uint8_t groupnum;
     const uint8_t PKG_DEV_NUM = 36;
+    const uint8_t PKG_DEV_GROUP = 15;
     
     advValue = HwADCRead();
     volValue = (advValue * 43) / 4095;
@@ -358,6 +361,10 @@ void station_upload(uint8_t left, uint16_t devid, uint16_t time)
         groupnum = 1;
     }
     
+    if (groupnum > PKG_DEV_GROUP)
+    {
+        groupnum = PKG_DEV_GROUP;
+    }
     /*  how many times to send */
     for (j=0; j<groupnum; j++)
     {
@@ -378,7 +385,7 @@ void station_upload(uint8_t left, uint16_t devid, uint16_t time)
             buffer[index++] = time;
             buffer[index++] = time >> 8;
         }
-        if (j == (groupnum - 1))
+        if ((j == (groupnum - 1)) && (devnum < (PKG_DEV_GROUP * PKG_DEV_NUM)))
         {
             for(i=0; i<(devnum % PKG_DEV_NUM); i++)
             {
