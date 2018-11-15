@@ -26,3 +26,20 @@ ble5_simple_observer_v1.0.14.bin
 ble5_simple_observer_v1.0.15.bin
   1.if no device found, t_next send the package too.
   2.devices can support more than 255
+
+ble5_simple_observer_v1.0.16.bin
+  1.在小基站没有入网时，可将蓝牙关掉
+  2.设置t-next<=3600
+  3.修改小基站打包数据
+
+ble5_simple_observer_v1.0.18.bin
+  1.广播300ms,休眠2700ms
+
+ble5_simple_observer_v1.0.19.bin
+  1.加入包号，打印数据长度
+
+ble5_simple_observer_v1.0.20
+  1.支持beacon
+
+ble5_simple_observer_v1.0.21
+  1.mac地址确定频率和sf
