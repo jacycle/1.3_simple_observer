@@ -172,7 +172,9 @@ Display_Handle dispHandle = NULL;
 Watchdog_Handle hWDT;
 uint16_t device_id;
 uint32_t device_freq;
+uint32_t device_freq1;
 uint8_t device_sf;
+uint8_t device_sf1;
 uint16_t t_temp;       // set to 0 when upload data 
 
 /*********************************************************************
@@ -948,19 +950,21 @@ int station_access_resp(uint8_t *pbuf, uint8_t len)
     if (datalen >= 6 && len >= 7)
     {
         deviceid = (pbuf[1] << 0) + (pbuf[2] << 8);
-        next_time = (pbuf[3] << 0) + (pbuf[4] << 8);
-        radio_freq = (pbuf[5] << 0) + (pbuf[6] << 8);
-        time_offset = (pbuf[7] << 0) + (pbuf[8] << 8);
-        if (next_time > 3600)
-        {
-            next_time = 3600;
-        }
+
         if (device_id == deviceid)
         {
+            next_time = (pbuf[3] << 0) + (pbuf[4] << 8);
+            if (next_time > 3600)
+            {
+                next_time = 3600;
+            }
+            device_sf1 = pbuf[5];
+            device_freq1 = (pbuf[6] << 0) + (pbuf[7] << 8) + (pbuf[8] << 16);
+            device_freq1 *= 1000;
             Display_print1(dispHandle, 2, 0, "id=%04x", deviceid);
             Display_print1(dispHandle, 2, 0, "next_time=%d", next_time);
-            Display_print1(dispHandle, 2, 0, "radio_freq=%d", radio_freq);
-            Display_print1(dispHandle, 2, 0, "time_offset=%d", time_offset);
+            Display_print1(dispHandle, 2, 0, "device_sf1=%d", device_sf1);
+            Display_print1(dispHandle, 2, 0, "device_freq1=%d", device_freq1/1000);
             return A1_ACESS_RESP;
         }
     }
@@ -977,17 +981,15 @@ int station_upload_resp(uint8_t *pbuf, uint8_t len)
     if (datalen >= 6 && len >= 7)
     {
         deviceid = (pbuf[1] << 0) + (pbuf[2] << 8);
-        next_time = (pbuf[3] << 0) + (pbuf[4] << 8);
-        time_offset = (pbuf[5] << 0) + (pbuf[6] << 8);
-        if (next_time > 3600)
-        {
-            next_time = 3600;
-        }
-        Display_print1(dispHandle, 2, 0, "devid=%04x", deviceid);
-        Display_print1(dispHandle, 2, 0, "next_time=%d", next_time);
-        Display_print1(dispHandle, 2, 0, "time_offset=%d", time_offset);
         if (device_id == deviceid)
         {
+            next_time = (pbuf[3] << 0) + (pbuf[4] << 8);
+            if (next_time > 3600)
+            {
+                next_time = 3600;
+            }
+            Display_print1(dispHandle, 2, 0, "devid=%04x", deviceid);
+            Display_print1(dispHandle, 2, 0, "next_time=%d", next_time);
             return A2_UPLOADE_RESP;
         }
     }

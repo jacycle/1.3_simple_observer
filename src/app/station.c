@@ -429,7 +429,7 @@ void station_upload(uint8_t left, uint16_t devid, uint16_t time)
         station_send_data(buffer, index);
         if (j != (groupnum - 1))
         {
-            Task_sleep(500 * (1000 / Clock_tickPeriod));
+            Task_sleep(100 * (1000 / Clock_tickPeriod));
         }
     }
 }
