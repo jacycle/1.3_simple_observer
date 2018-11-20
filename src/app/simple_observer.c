@@ -961,10 +961,12 @@ int station_access_resp(uint8_t *pbuf, uint8_t len)
             device_sf1 = pbuf[5];
             device_freq1 = (pbuf[6] << 0) + (pbuf[7] << 8) + (pbuf[8] << 16);
             device_freq1 *= 1000;
+            time_offset = (pbuf[9] << 0) + (pbuf[10] << 8);
             Display_print1(dispHandle, 2, 0, "id=%04x", deviceid);
             Display_print1(dispHandle, 2, 0, "next_time=%d", next_time);
             Display_print1(dispHandle, 2, 0, "device_sf1=%d", device_sf1);
             Display_print1(dispHandle, 2, 0, "device_freq1=%d", device_freq1/1000);
+            Display_print1(dispHandle, 2, 0, "time_offset=%d", time_offset);
             return A1_ACESS_RESP;
         }
     }
@@ -988,8 +990,10 @@ int station_upload_resp(uint8_t *pbuf, uint8_t len)
             {
                 next_time = 3600;
             }
+            time_offset = (pbuf[5] << 0) + (pbuf[6] << 8);
             Display_print1(dispHandle, 2, 0, "devid=%04x", deviceid);
             Display_print1(dispHandle, 2, 0, "next_time=%d", next_time);
+            Display_print1(dispHandle, 2, 0, "time_offset=%d", time_offset);
             return A2_UPLOADE_RESP;
         }
     }
