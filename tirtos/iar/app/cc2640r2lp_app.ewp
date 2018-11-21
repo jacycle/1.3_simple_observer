@@ -390,6 +390,7 @@
                     <state>$PROJ_DIR$\..\..\..\src\driver\spi</state>
                     <state>$PROJ_DIR$\..\..\..\src\driver\SX127x\platform\sx12xxEiger</state>
                     <state>$PROJ_DIR$\..\..\..\..\..\..\..\..\source\ti\ble5stack\common\cc26xx\time</state>
+                    <state>$PROJ_DIR$\..\..\..\src\driver\adc</state>
                 </option>
                 <option>
                     <name>CCStdIncCheck</name>

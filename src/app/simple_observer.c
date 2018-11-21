@@ -71,7 +71,7 @@
 #include "hw_gpio.h"
 #include "hw_uart.h"
 #include "hw_spi.h"
-#include "hal_adc.h"
+#include "hw_adc.h"
 
 //sx127x
 #include "platform.h"
@@ -176,6 +176,7 @@ uint32_t device_freq1;
 uint8_t device_sf;
 uint8_t device_sf1;
 uint16_t t_temp;       // set to 0 when upload data 
+uint8_t radio_led_display;
 
 /*********************************************************************
  * EXTERNAL VARIABLES
@@ -253,6 +254,7 @@ void SimpleBLEObserver_initKeys(void);
 
 void SimpleBLEObserver_keyChangeHandler(uint8 keys);
 static void SimpleBLEPeripheral_clockHandler(UArg arg);
+static void radio_led_indicate(uint8_t display);
 
 /*********************************************************************
  * PROFILE CALLBACKS
@@ -427,7 +429,7 @@ void SimpleBLEObserver_init(void)
   Display_print0(dispHandle, 0, 0, "BLE Observer");
   
   HwGPIOInit();
-  HwGPIOSet(Board_RLED, 0);
+//  HwGPIOSet(Board_RLED, 0);
   
 //  HwUARTInit();
 //  HwUARTWrite("observer init\r\n",13);
@@ -513,6 +515,7 @@ static void SimpleBLEObserver_taskFxn(UArg a0, UArg a1)
                                            DEFAULT_DISCOVERY_ACTIVE_SCAN,
                                            DEFAULT_DISCOVERY_WHITE_LIST);        
         }
+        radio_led_indicate(radio_led_display);
     }
     if (events & SBP_STOP_DICOVER_EVT)
     {
@@ -669,6 +672,12 @@ static void SimpleBLEObserver_handleKeys(uint8 shift, uint8 keys)
   }
   else
   {
+    if (key1_counter >= 1 && key1_counter <= 5)
+    {
+      radio_led_display = radio_led_display ? 0:1;
+      // display immediately
+      radio_led_indicate(radio_led_display);
+    }
     key1_counter = 0;
   }
 }
@@ -938,8 +947,8 @@ static uint8_t SimpleBLEObserver_enqueueMsg(uint8_t event, uint8_t state,
  */
 static uint16_t a2_mode_retry;
 static uint16_t next_time;
-static uint16_t radio_freq;
-static uint16_t time_offset;
+//static uint16_t radio_freq;
+static uint16_t time_offset;  // just return back to host
 
 int station_access_resp(uint8_t *pbuf, uint8_t len)
 {
@@ -1027,6 +1036,96 @@ int station_recv_handle(uint8_t *pbuf, uint8_t len)
     return RADIO_NO_RESP;
 }
 
+static void radio_led_indicate(uint8_t display)
+{
+    uint16_t advValue;
+    uint32_t volValue;
+    double pktrssi;
+    char rssi;
+    
+    if (display == 0)
+    {
+        HwGPIOSet(Board_LED1, 0);
+        HwGPIOSet(Board_LED2, 0);
+        HwGPIOSet(Board_LED3, 0);
+        HwGPIOSet(Board_LED4, 0);
+        HwGPIOSet(Board_LED5, 0);
+        return;
+    }
+    
+    advValue = HwADCRead();
+    volValue = (advValue * 43) / 4095;
+    pktrssi = SX1276GetPacketRssi();
+    rssi = pktrssi;
+    
+    if (volValue < 42)
+    {
+        HwGPIOSet(Board_LED5, 1);
+    }
+    else
+    {
+        HwGPIOSet(Board_LED5, 0);
+    }
+    if (rssi == 0)
+    {  // not register
+        HwGPIOSet(Board_LED1, 1);
+        HwGPIOSet(Board_LED2, 0);
+        HwGPIOSet(Board_LED3, 0);
+        HwGPIOSet(Board_LED4, 0);
+    }
+    if (rssi > 0 && rssi <= 0x80)
+    {  // low
+        HwGPIOSet(Board_LED1, 0);
+        HwGPIOSet(Board_LED2, 0);
+        HwGPIOSet(Board_LED3, 0);
+        HwGPIOSet(Board_LED4, 1);
+    }
+    if (rssi>0x80 && rssi<=0x9f)
+    {  // middle
+        HwGPIOSet(Board_LED1, 0);
+        HwGPIOSet(Board_LED2, 0);
+        HwGPIOSet(Board_LED3, 1);
+        HwGPIOSet(Board_LED4, 1);
+    }
+    if (rssi>=0xa0 && rssi<=0xb0)
+    {  // strong
+        HwGPIOSet(Board_LED1, 0);
+        HwGPIOSet(Board_LED2, 1);
+        HwGPIOSet(Board_LED3, 1);
+        HwGPIOSet(Board_LED4, 1);
+    }
+    if (rssi > 0xb0)
+    {
+        HwGPIOSet(Board_LED1, 1);
+        HwGPIOSet(Board_LED2, 1);
+        HwGPIOSet(Board_LED3, 1);
+        HwGPIOSet(Board_LED4, 1);
+    }
+    Display_print1(dispHandle, 0, 0, "rssi=%d", rssi);
+}
+
+/*
+ * device register to network then led twinkle
+*/
+void radio_led_twinkle(void)
+{
+    uint8_t i;
+    
+    for(i=0; i<3; i++)
+    {
+        HwGPIOSet(Board_LED1, 1);
+        HwGPIOSet(Board_LED2, 1);
+        HwGPIOSet(Board_LED3, 1);
+        HwGPIOSet(Board_LED4, 1);
+        Task_sleep(200 * (1000 / Clock_tickPeriod));
+        HwGPIOSet(Board_LED1, 0);
+        HwGPIOSet(Board_LED2, 0);
+        HwGPIOSet(Board_LED3, 0);
+        HwGPIOSet(Board_LED4, 0);
+        Task_sleep(200 * (1000 / Clock_tickPeriod));
+    }
+}
+
 static void radio_taskFxn(UArg a0, UArg a1)
 {
     int a1_wait_counter;
@@ -1083,6 +1182,7 @@ start:
               {
                   a1_wait_counter = 0;
                   Display_print0(dispHandle, 0, 0, "goto start");
+                  radio_led_twinkle();
                   goto start;
               }
               HwGPIOSet(Board_RLED, 1);
@@ -1145,6 +1245,7 @@ device_delete:
                   Event_post(syncEvent, SBP_STOP_DICOVER_EVT);
                   Display_print0(dispHandle, 0, 0, "goto start");
                   a2_mode_retry = 0;
+                  radio_led_twinkle();
                   goto start;
               }
               station_seq_plusplus();

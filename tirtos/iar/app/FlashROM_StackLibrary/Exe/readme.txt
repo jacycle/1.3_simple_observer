@@ -43,3 +43,6 @@ ble5_simple_observer_v1.0.20
 
 ble5_simple_observer_v1.0.21
   1.mac地址确定频率和sf
+
+ble5_simple_observer_v1.0.22
+  1.根据大基站，修改小基站上报时的频率
