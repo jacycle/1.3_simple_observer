@@ -215,6 +215,11 @@ void station_init(void)
 #endif
 }
 
+void station_deinit(void)
+{
+    Radio->DeInit();
+}
+
 void station_send_data(uint8_t *pbuf, uint8_t len)
 {
     uint32_t state;

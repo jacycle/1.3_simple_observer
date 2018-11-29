@@ -61,6 +61,13 @@ void SX1276InitIo( void );
 void SX1276SetReset( uint8_t state );
 
 /*!
+ * \brief Set the radio nss pin state
+ * 
+ * \param state New reset pin state
+ */
+void SX1276SetNss( uint8_t state );
+
+/*!
  * \brief Writes the radio register at the specified address
  *
  * \param [IN]: addr Register address

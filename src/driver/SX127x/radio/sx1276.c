@@ -38,6 +38,12 @@ uint8_t SX1276Regs[0x70];
 static bool LoRaOn = false;
 static bool LoRaOnState = false;
 
+void SX1276DeInit(void)
+{
+    SX1276SetReset(RADIO_RESET_ON);
+    SX1276SetNss(0);
+}
+
 void SX1276Init( void )
 {
     uint8_t TempReg;

@@ -515,7 +515,11 @@ static void SimpleBLEObserver_taskFxn(UArg a0, UArg a1)
                                            DEFAULT_DISCOVERY_ACTIVE_SCAN,
                                            DEFAULT_DISCOVERY_WHITE_LIST);        
         }
-        radio_led_indicate(radio_led_display);
+        if (radio_led_display)
+        {
+            radio_led_indicate(radio_led_display);
+            radio_led_display--;
+        }
     }
     if (events & SBP_STOP_DICOVER_EVT)
     {
@@ -674,7 +678,7 @@ static void SimpleBLEObserver_handleKeys(uint8 shift, uint8 keys)
   {
     if (key1_counter >= 1 && key1_counter <= 5)
     {
-      radio_led_display = radio_led_display ? 0:1;
+      radio_led_display = 2;
       // display immediately
       radio_led_indicate(radio_led_display);
     }
@@ -1058,7 +1062,7 @@ static void radio_led_indicate(uint8_t display)
     pktrssi = SX1276GetPacketRssi();
     rssi = pktrssi;
     
-    if (volValue < 42)
+    if (volValue < 22)
     {
         HwGPIOSet(Board_LED5, 1);
     }
@@ -1177,7 +1181,9 @@ start:
               }
               Display_print1(dispHandle, 0, 0, "wait_time=%d", wait_time);
               wait_time = wait_time * 1000 * (1000 / Clock_tickPeriod);
+              station_deinit();
               events = Event_pend(myEventHandle, Event_Id_NONE, Event_Id_00 | Event_Id_01, wait_time);
+              station_init();
               if (events & Event_Id_00)
               {
                   a1_wait_counter = 0;
@@ -1187,7 +1193,7 @@ start:
               }
               HwGPIOSet(Board_RLED, 1);
               Display_print0(dispHandle, 0, 0, "station_access_request");
-              if (LoRaGetRFFrequency() != LoRaGetRFFrequencyC1())
+              //if (LoRaGetRFFrequency() != LoRaGetRFFrequencyC1())
               {
                   SX1276LoRaSetRFFrequencyC1();
                   Task_sleep(100 * (1000 / Clock_tickPeriod));
@@ -1237,7 +1243,9 @@ device_delete:
               }
               //wait_time =(((device_id & 0x1f)-1)*20 + 600 + 20) * 1000 * (1000 / Clock_tickPeriod);
               wait_time =(next_time) * 1000 * (1000 / Clock_tickPeriod);
+              station_deinit();
               events = Event_pend(myEventHandle, Event_Id_NONE, Event_Id_00 | Event_Id_01, wait_time);
+              station_init();
               if (events & Event_Id_00)
               {
                   a1_wait_counter = 0;
@@ -1249,14 +1257,14 @@ device_delete:
                   goto start;
               }
               station_seq_plusplus();
+              //if (LoRaGetRFFrequency() != LoRaGetRFFrequencyT1())
+              {
+                  SX1276LoRaSetRFFrequencyT1();
+                  Task_sleep(100 * (1000 / Clock_tickPeriod));
+              }
               for (i=0; i<3; i++)
               {
                   Display_print0(dispHandle, 0, 0, "station_upload");
-                  if (LoRaGetRFFrequency() != LoRaGetRFFrequencyT1())
-                  {
-                      SX1276LoRaSetRFFrequencyT1();
-                      Task_sleep(100 * (1000 / Clock_tickPeriod));
-                  }
                   station_upload(0, device_id, time_offset);
                   station_start_rx();
 //                  wait_time = 1000;

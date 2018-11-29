@@ -73,13 +73,13 @@ static PIN_Config radCtrlCfg[] =
 {
 //  RXE_PIN  | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW  | PIN_PUSHPULL | PIN_DRVSTR_MAX,
 //  TXE_PIN  | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,
-  NSS_PIN  | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,
-  RESET_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,
+  NSS_PIN  | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MIN,
+  RESET_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MIN,
   
   DIO0_PIN          | PIN_GPIO_OUTPUT_DIS  | PIN_INPUT_EN  |  PIN_NOPULL,
 //  DIO1_PIN          | PIN_GPIO_OUTPUT_DIS  | PIN_INPUT_EN  |  PIN_PULLUP,
 //  DIO2_PIN          | PIN_GPIO_OUTPUT_DIS  | PIN_INPUT_EN  |  PIN_PULLUP,
-  DIO3_PIN          | PIN_GPIO_OUTPUT_DIS  | PIN_INPUT_EN  |  PIN_PULLUP,
+//  DIO3_PIN          | PIN_GPIO_OUTPUT_DIS  | PIN_INPUT_EN  |  PIN_PULLUP,
 //  DIO4_PIN          | PIN_GPIO_OUTPUT_DIS  | PIN_INPUT_EN  |  PIN_PULLUP,
 //  DIO5_PIN          | PIN_GPIO_OUTPUT_DIS  | PIN_INPUT_EN  |  PIN_PULLUP,
   PIN_TERMINATE
@@ -131,6 +131,19 @@ void SX1276SetReset( uint8_t state )
     else
     {
         RESET_HIGH();
+    }
+}
+
+
+void SX1276SetNss( uint8_t state )
+{
+    if( state )
+    {
+        NSS_HIGH();
+    }
+    else
+    {
+        NSS_LOW();
     }
 }
 
@@ -207,7 +220,8 @@ inline uint_t SX1276ReadDio2( void )
 
 inline uint_t SX1276ReadDio3( void )
 {
-    return PIN_getInputValue(DIO3_PIN);
+//    return PIN_getInputValue(DIO3_PIN);
+    return 0;
 }
 
 inline uint_t SX1276ReadDio4( void )

@@ -49,6 +49,11 @@ bool SX1276GetLoRaOn( void );
 void SX1276Init( void );
 
 /*!
+ * \brief DeInitializes the SX1276
+ */
+void SX1276DeInit(void);
+
+/*!
  * \brief Resets the SX1276
  */
 void SX1276Reset( void );

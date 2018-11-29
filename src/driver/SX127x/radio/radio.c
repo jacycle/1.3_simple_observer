@@ -57,6 +57,7 @@ tRadioDriver* RadioDriverInit( void )
     RadioDriver.Process = SX1272Process;
 #elif defined( USE_SX1276_RADIO )
     RadioDriver.Init = SX1276Init;
+    RadioDriver.DeInit = SX1276DeInit;
     RadioDriver.Reset = SX1276Reset;
     RadioDriver.StartRx = SX1276StartRx;
     RadioDriver.GetRxPacket = SX1276GetRxPacket;

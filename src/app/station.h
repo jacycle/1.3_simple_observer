@@ -30,6 +30,7 @@ int station_recv_data(uint8_t **pbuf, uint16_t *len);
 void station_start_rx(void);
 
 void station_init(void);
+void station_deinit(void);
 void station_goto_sleep(void);
 void station_seq_plusplus(void);
 void station_device_add(uint16_t index, uint16_t id, uint8_t c);

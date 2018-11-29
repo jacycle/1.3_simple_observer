@@ -51,6 +51,7 @@ typedef enum
 typedef struct sRadioDriver
 {
     void ( *Init )( void );
+    void ( *DeInit )( void );
     void ( *Reset )( void );
     void ( *StartRx )( void );
     void ( *GetRxPacket )( void *buffer, uint16_t *size );
