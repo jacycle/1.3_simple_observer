@@ -520,6 +520,10 @@ static void SimpleBLEObserver_taskFxn(UArg a0, UArg a1)
             radio_led_indicate(radio_led_display);
             radio_led_display--;
         }
+        else
+        {
+            radio_led_indicate(0);
+        }
     }
     if (events & SBP_STOP_DICOVER_EVT)
     {
@@ -1181,9 +1185,9 @@ start:
               }
               Display_print1(dispHandle, 0, 0, "wait_time=%d", wait_time);
               wait_time = wait_time * 1000 * (1000 / Clock_tickPeriod);
-              station_deinit();
+//              station_deinit();
               events = Event_pend(myEventHandle, Event_Id_NONE, Event_Id_00 | Event_Id_01, wait_time);
-              station_init();
+//              station_init();
               if (events & Event_Id_00)
               {
                   a1_wait_counter = 0;
@@ -1243,9 +1247,9 @@ device_delete:
               }
               //wait_time =(((device_id & 0x1f)-1)*20 + 600 + 20) * 1000 * (1000 / Clock_tickPeriod);
               wait_time =(next_time) * 1000 * (1000 / Clock_tickPeriod);
-              station_deinit();
+//              station_deinit();
               events = Event_pend(myEventHandle, Event_Id_NONE, Event_Id_00 | Event_Id_01, wait_time);
-              station_init();
+//              station_init();
               if (events & Event_Id_00)
               {
                   a1_wait_counter = 0;

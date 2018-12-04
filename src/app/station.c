@@ -283,8 +283,10 @@ void station_dump(uint8_t *pbuf, uint16_t len)
 
 void station_goto_sleep(void)
 {
-//    Radio->SetOpMode(RFLR_OPMODE_SLEEP);
-    Radio->SetOpMode(RFLR_OPMODE_STANDBY);
+    Radio->SetOpMode(RFLR_OPMODE_SLEEP);
+     
+    /* standby mode 2ma */
+//    Radio->SetOpMode(RFLR_OPMODE_STANDBY);
     
 //    SX1276LoRaInit();
 }
