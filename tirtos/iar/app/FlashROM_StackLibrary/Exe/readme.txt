@@ -46,3 +46,9 @@ ble5_simple_observer_v1.0.21
 
 ble5_simple_observer_v1.0.22
   1.根据大基站，修改小基站上报时的频率
+
+ble5_simple_observer_v1.0.23
+  1.增加led显示
+
+ble5_simple_observer_v1.0.25
+  1.lora standby -> lora sleep
