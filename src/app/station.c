@@ -15,6 +15,7 @@
 #include "sx1276-LoRa.h"
 #include "sx1276.h"
 #include "hal_adc.h"
+#include "hw_adc.h"
 
 #define BUFFER_SIZE     256                          // Define the payload size here
 
@@ -392,9 +393,17 @@ void station_upload(uint8_t left, uint16_t devid, uint16_t time)
             buffer[index++] = time;
             buffer[index++] = time >> 8;
         }
-        if ((j == (groupnum - 1)) && (devnum < (PKG_DEV_GROUP * PKG_DEV_NUM)))
+        if ((j == (groupnum - 1)) && (devnum <= (PKG_DEV_GROUP * PKG_DEV_NUM)))
         {
-            for(i=0; i<(devnum % PKG_DEV_NUM); i++)
+            if ((devnum != 0) && ((devnum % PKG_DEV_NUM) == 0))
+            {
+                devnum = PKG_DEV_NUM;
+            }
+            else
+            {
+                devnum = (devnum % PKG_DEV_NUM);
+            }
+            for(i=0; i<devnum; i++)
             {
                 buffer[index++] = ble_device_group[j*PKG_DEV_NUM + i].id;
                 buffer[index++] = ble_device_group[j*PKG_DEV_NUM + i].id >> 8;
@@ -403,11 +412,11 @@ void station_upload(uint8_t left, uint16_t devid, uint16_t time)
             /* first packet */
             if (j == 0)
             {
-                buffer[5] = ((devnum % PKG_DEV_NUM) * 3) + 4;
+                buffer[5] = (devnum * 3) + 4;
             }
             else
             {
-                buffer[5] = ((devnum % PKG_DEV_NUM) * 3);
+                buffer[5] = (devnum * 3);
             }
         }
         else

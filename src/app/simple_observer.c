@@ -1137,7 +1137,7 @@ void radio_led_twinkle(void)
 static void radio_taskFxn(UArg a0, UArg a1)
 {
     int a1_wait_counter;
-    static int wait_time;
+    static uint32_t wait_time;
     int ret;
     uint8_t i;
     uint8_t *pbuf;
@@ -1151,7 +1151,7 @@ static void radio_taskFxn(UArg a0, UArg a1)
     
 //    chipid = 0;
 //    Display_print1(dispHandle, 0, 0, "chipid=%x", chipid);
-	station_init();
+    station_init();
     Display_print0(dispHandle, 0, 0, "radio_taskFxn start");
     while(device_id == 0)
     {
@@ -1174,7 +1174,7 @@ start:
           {
               station_goto_sleep();
               Display_print0(dispHandle, 0, 0, "A1_MODE");
-              if (a1_wait_counter < 100)
+              if (a1_wait_counter < 10)
               {
                   wait_time = (rand() % 60) + 1;
                   a1_wait_counter++;
@@ -1182,9 +1182,10 @@ start:
               else
               {
                   wait_time = (rand() % 1000) + 1000;
+                  station_init();
               }
               Display_print1(dispHandle, 0, 0, "wait_time=%d", wait_time);
-              wait_time = wait_time * 1000 * (1000 / Clock_tickPeriod);
+              wait_time = ((wait_time * 1000) / Clock_tickPeriod) * 1000;
 //              station_deinit();
               events = Event_pend(myEventHandle, Event_Id_NONE, Event_Id_00 | Event_Id_01, wait_time);
 //              station_init();
